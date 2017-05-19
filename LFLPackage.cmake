@@ -33,6 +33,8 @@ elseif(LFL_ANDROID)
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${target}-android
       COMMAND mkdir -p assets
       COMMAND mkdir -p res/raw
+      COMMAND touch assets
+      COMMAND touch res/raw
       COMMAND cp ${${target}_ASSET_FILES} assets
       COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/drawable-*\; do dbn=`basename $$d`\; if [ -d res/$$dbn ]; then cp $$d/* res/$$dbn\; fi\; done
       COMMAND if [ $$\(find ${CMAKE_CURRENT_SOURCE_DIR}/assets -name "*.wav" | wc -l\) != "0" ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/assets/*.wav res/raw\; fi
