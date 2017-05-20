@@ -31,15 +31,7 @@ elseif(LFL_ANDROID)
 
   function(lfl_post_build_start target)
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${target}-android
-      COMMAND mkdir -p assets
-      COMMAND mkdir -p res/raw
-      COMMAND touch assets
-      COMMAND touch res/raw
-      COMMAND cp ${${target}_ASSET_FILES} assets
-      COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/drawable-*\; do dbn=`basename $$d`\; if [ -d res/$$dbn ]; then cp $$d/* res/$$dbn\; fi\; done
-      COMMAND if [ $$\(find ${CMAKE_CURRENT_SOURCE_DIR}/assets -name "*.wav" | wc -l\) != "0" ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/assets/*.wav res/raw\; fi
-      COMMAND if [ $$\(find ${CMAKE_CURRENT_SOURCE_DIR}/assets -name "*.mp3" | wc -l\) != "0" ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/assets/*.mp3 res/raw\; fi
-      COMMAND if [ $$\(find ${CMAKE_CURRENT_SOURCE_DIR}/assets -name "*.ogg" | wc -l\) != "0" ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/assets/*.ogg res/raw\; fi)
+      COMMAND ${LFL_SOURCE_DIR}/core/script/CopyAndroidPackageAssets.sh ${${target}_ASSET_FILES})
 
     add_custom_target(${target}_release WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${target}-android DEPENDS ${target}
       COMMAND "JAVA_HOME=${JAVA_HOME}" "ANDROID_HOME=${ANDROID_HOME}" ${GRADLE_HOME}/bin/gradle uninstallRelease
