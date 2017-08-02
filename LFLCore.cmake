@@ -80,6 +80,7 @@ elseif(LFL_IOS)
   set(LFL_APP_CONVERT app_null_convert)
   set(LFL_APP_ADVERTISING app_ios_admob)
   set(LFL_APP_BILLING app_apple_billing)
+  set(LFL_APP_NAG app_ios_nag)
 
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(LFL_OSX 1)
