@@ -85,7 +85,8 @@ elseif(LFL_IOS)
         COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/BundleRoot/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app"
         COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
         COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.bundle\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
-        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/\$\$o" $$f\; done)
+        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/\$\$o" $$f\; done
+        COMMAND for d in ${LFL_SOURCE_DIR}/core/imports/appirater/\*.lproj\; do if [ -d $$d ]; then o=`basename $$d` \; if [ -d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" ]; then cp $$d/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" \; fi\; fi\; done)
     else()
       set(should_sign)
       if(NOT LFL_IOS_SIM)
@@ -97,6 +98,7 @@ elseif(LFL_IOS)
         COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
         COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.bundle\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
         COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile $<TARGET_FILE_DIR:${target}>/$$o $$f\; done
+        COMMAND for d in ${LFL_SOURCE_DIR}/core/imports/appirater/\*.lproj\; do if [ -d $$d ]; then o=`basename $$d` \; if [ -d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" ]; then cp $$d/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" \; fi\; fi\; done
         COMMAND dsymutil $<TARGET_FILE:${target}> -o ${target}.dSYM
         COMMAND if [ ${should_sign} ]\; then codesign -f -s \"${LFL_IOS_CERT}\"
         --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Entitlements.plist $<TARGET_FILE_DIR:${target}>\; fi)
