@@ -93,7 +93,7 @@ if(LFL_JPEG)
   else()
     set(JPEG_CONFIGURE_ENV ${CONFIGURE_ENV})
     if(LFL_OSX)
-      set(JPEG_CONFIGURE_ENV ${JPEG_CONFIGURE_ENV} NASM=/opt/local/bin/nasm)
+      #set(JPEG_CONFIGURE_ENV ${JPEG_CONFIGURE_ENV} NASM=/opt/local/bin/nasm)
     endif()
     ExternalProject_Add(libjpeg-turbo LOG_CONFIGURE ON LOG_BUILD ON
                         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo

@@ -89,7 +89,7 @@ elseif(LFL_IOS)
         COMMAND for d in ${LFL_SOURCE_DIR}/core/imports/appirater/\*.lproj\; do if [ -d $$d ]; then o=`basename $$d` \; if [ -d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" ]; then cp $$d/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" \; fi\; fi\; done)
     else()
       set(should_sign)
-      if(NOT LFL_IOS_SIM)
+      if(NOT LFL_IOS_SIM AND LFL_IOS_CERT)
         set(should_sign 1)
       endif()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -154,13 +154,18 @@ elseif(LFL_OSX)
   endfunction()
 
   function(lfl_post_build_copy_bin target dest_target)
+    set(should_sign)
+    if(LFL_OSX_CERT)
+      set(should_sign 1)
+    endif()
+
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND cp $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${dest_target}>/${target}
       COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
       COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
       COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
       COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${dest_target}>/${target})
+      COMMAND if [ ${should_sign} ]; then codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${dest_target}>/${target} \; fi)
 
     add_custom_target(${target}_run WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
       COMMAND $<TARGET_FILE_DIR:${dest_target}>/${target})
