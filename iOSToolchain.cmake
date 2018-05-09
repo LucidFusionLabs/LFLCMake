@@ -1,6 +1,6 @@
 set(LFL_APPLE_DEVELOPER "/Applications/Xcode.app/Contents/Developer")
 set(LFL_IOS_ROOT "${LFL_APPLE_DEVELOPER}/Platforms/iPhoneOS.platform/Developer")
-set(LFL_IOS_SDK "${LFL_IOS_ROOT}/SDKs/iPhoneOS.sdk")
+set(LFL_IOS_SDK "${LFL_IOS_ROOT}/SDKs/iPhoneOS11.3.sdk")
 set(LFL_IOS_ARCH "arm64;armv7")
 set(LFL_IOS_ARCH_FLAGS "-arch arm64 -arch armv7")
 set(LFL_IOS TRUE)
