@@ -70,11 +70,13 @@ elseif(LFL_IOS)
   string(REPLACE ";" " " IOS_CERT "${LFL_IOS_CERT}")
   set_target_properties(${target} PROPERTIES
                         MACOSX_BUNDLE TRUE
+                        RESOURCE Assets.xcassets
                         XCODE_ATTRIBUTE_SKIP_INSTALL NO
                         XCODE_ATTRIBUTE_ENABLE_BITCODE FALSE
                         XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${IOS_CERT}"
                         XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_IOS_TEAM}"
-                        XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_IOS_PROVISION_NAME}")
+                        XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_IOS_PROVISION_NAME}"
+                        XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
 
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist)
       set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist)
