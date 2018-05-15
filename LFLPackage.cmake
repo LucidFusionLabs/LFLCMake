@@ -161,13 +161,18 @@ elseif(LFL_OSX)
       set(should_sign 1)
     endif()
 
-    add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMAND cp $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-      COMMAND if [ ${should_sign} ]; then codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${dest_target}>/${target} \; fi)
+    if(LFL_XCODE)
+      add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND cp $<TARGET_FILE:${target}> "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app")
+    else()
+      add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND cp $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${dest_target}>/${target}
+        COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
+        COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
+        COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
+        COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
+        COMMAND if [ ${should_sign} ]; then codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${dest_target}>/${target} \; fi)
+    endif()
 
     add_custom_target(${target}_run WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
       COMMAND $<TARGET_FILE_DIR:${dest_target}>/${target})
@@ -177,8 +182,15 @@ elseif(LFL_OSX)
   endfunction()
 
   function(lfl_post_build_start target)
-    set_target_properties(${target} PROPERTIES MACOSX_BUNDLE TRUE)
-    set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME ${target})
+    string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
+    set_target_properties(${target} PROPERTIES
+                          MACOSX_BUNDLE TRUE
+                          MACOSX_BUNDLE_BUNDLE_NAME ${target}
+                          XCODE_ATTRIBUTE_SKIP_INSTALL NO
+                          XCODE_ATTRIBUTE_ENABLE_BITCODE FALSE
+                          XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${OSX_CERT}"
+                          XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}"
+                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}")
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
       set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
     endif()
@@ -190,14 +202,20 @@ elseif(LFL_OSX)
       set(copy_lfl_app_lib_files 1)
     endif()
 
-    add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMAND mkdir -p $<TARGET_FILE_DIR:${target}>/../Libraries
-      COMMAND if [ ${copy_lfl_app_lib_files} ]; then cp ${${target}_LIB_FILES} $<TARGET_FILE_DIR:${target}>/../Libraries\; fi
-      COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE:${target}> 
-      COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE:${target}> 
-      COMMAND if [ -f $<TARGET_FILE_DIR:${target}>/../Libraries/libopencv_imgproc.3.1.dylib ]; then install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${target}>/../Libraries/libopencv_imgproc.3.1.dylib\; fi
-      COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE:${target}> 
-      COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE:${target}> )
+    if(LFL_XCODE)
+      add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\; done)
+    else()
+      add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>/../Resources \; fi\; done
+        COMMAND mkdir -p $<TARGET_FILE_DIR:${target}>/../Libraries
+        COMMAND if [ ${copy_lfl_app_lib_files} ]; then cp ${${target}_LIB_FILES} $<TARGET_FILE_DIR:${target}>/../Libraries\; fi
+        COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE:${target}> 
+        COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE:${target}> 
+        COMMAND if [ -f $<TARGET_FILE_DIR:${target}>/../Libraries/libopencv_imgproc.3.1.dylib ]; then install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${target}>/../Libraries/libopencv_imgproc.3.1.dylib\; fi
+        COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE:${target}> 
+        COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE:${target}> )
+    endif()
 
     add_custom_target(${target}_pkg WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE:${target}>

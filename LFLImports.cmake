@@ -93,7 +93,8 @@ if(LFL_JPEG)
   else()
     set(JPEG_CONFIGURE_ENV ${CONFIGURE_ENV})
     if(LFL_OSX)
-      #set(JPEG_CONFIGURE_ENV ${JPEG_CONFIGURE_ENV} NASM=/opt/local/bin/nasm)
+      find_program(NASM_PATH NAMES nasm HINTS /usr/local/bin /opt/local/bin)
+      set(JPEG_CONFIGURE_ENV ${JPEG_CONFIGURE_ENV} NASM=${NASM_PATH})
     endif()
     ExternalProject_Add(libjpeg-turbo LOG_CONFIGURE ON LOG_BUILD ON
                         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo
@@ -237,9 +238,15 @@ endif()
 
 # fabric
 if(LFL_FABRIC)
-  set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Fabric.framework/Headers
-      ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Crashlytics.framework/Headers PARENT_SCOPE)
-  set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios -framework Fabric -framework Crashlytics" PARENT_SCOPE)
+  if(LFL_IOS)
+    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Fabric.framework/Headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Crashlytics.framework/Headers PARENT_SCOPE)
+    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios -framework Fabric -framework Crashlytics" PARENT_SCOPE)
+  elseif(LFL_OSX)
+    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx/Fabric.framework/Headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx/Crashlytics.framework/Headers PARENT_SCOPE)
+    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx -framework Fabric -framework Crashlytics" PARENT_SCOPE)
+  endif()
 endif()
 
 # crittercism
