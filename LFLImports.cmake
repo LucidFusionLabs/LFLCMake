@@ -488,7 +488,7 @@ if(LFL_FFMPEG)
     set(FFMPEG_LIB libavdevice libavfilter libavformat libavcodec libavutil libswscale libswresample
         libpostproc ${LAME_LIB} ${X264_LIB})
     if(LFL_APPLE)
-      set(FFMPEG_LIB ${FFMPEG_LIB} "-framework AudioToolbox -framework VideoToolbox -framework CoreMedia -framework VideoDecodeAcceleration")
+      set(FFMPEG_LIB ${FFMPEG_LIB} "-framework AudioToolbox -framework VideoToolbox -framework CoreMedia -framework VideoDecodeAcceleration -llzma")
     endif()
         
     set(FFMPEG_LIB ${FFMPEG_LIB} PARENT_SCOPE)

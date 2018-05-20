@@ -187,8 +187,8 @@ elseif(LFL_OSX)
                           MACOSX_BUNDLE TRUE
                           MACOSX_BUNDLE_BUNDLE_NAME ${target}
                           XCODE_ATTRIBUTE_SKIP_INSTALL NO
-                          XCODE_ATTRIBUTE_ENABLE_BITCODE FALSE
-                          XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${OSX_CERT}"
+                          XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
+                          XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                           XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}"
                           XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}")
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
