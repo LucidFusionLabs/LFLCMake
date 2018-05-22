@@ -1,10 +1,10 @@
 # $Id: LFLPackage.cmake 1335 2014-12-02 04:13:46Z justin $
 
 if(LFL_EMSCRIPTEN)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
   endfunction()
 
   function(lfl_post_build_start target)
@@ -23,10 +23,10 @@ if(LFL_EMSCRIPTEN)
   endmacro()
 
 elseif(LFL_ANDROID)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
   endfunction()
 
   function(lfl_post_build_start target)
@@ -60,10 +60,10 @@ elseif(LFL_ANDROID)
   endmacro()
 
 elseif(LFL_IOS)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
   endfunction()
 
   function(lfl_post_build_start target)
@@ -150,12 +150,12 @@ elseif(LFL_IOS)
   endmacro()
 
 elseif(LFL_OSX)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMAND cp $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${dest_target}>/../Resources/assets)
+      COMMAND cp $<TARGET_FILE:${source_target}> $<TARGET_FILE_DIR:${target}>/../Resources/assets)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
     set(should_sign)
     if(LFL_OSX_CERT)
       set(should_sign 1)
@@ -163,22 +163,22 @@ elseif(LFL_OSX)
 
     if(LFL_XCODE)
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND cp $<TARGET_FILE:${target}> "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app")
+        COMMAND cp $<TARGET_FILE:${source_target}> "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app")
     else()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND cp $<TARGET_FILE:${target}> $<TARGET_FILE_DIR:${dest_target}>/${target}
-        COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-        COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-        COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-        COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE_DIR:${dest_target}>/${target}
-        COMMAND if [ ${should_sign} ]; then codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${dest_target}>/${target} \; fi)
+        COMMAND cp $<TARGET_FILE:${source_target}> $<TARGET_FILE_DIR:${target}>/${source_target}
+        COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE_DIR:${target}>/${source_target}
+        COMMAND install_name_tool -change /usr/local/lib/libmp3lame.0.dylib @loader_path/../Libraries/libmp3lame.0.dylib $<TARGET_FILE_DIR:${target}>/${source_target}
+        COMMAND install_name_tool -change lib/libopencv_core.3.1.dylib @loader_path/../Libraries/libopencv_core.3.1.dylib $<TARGET_FILE_DIR:${target}>/${source_target}
+        COMMAND install_name_tool -change lib/libopencv_imgproc.3.1.dylib @loader_path/../Libraries/libopencv_imgproc.3.1.dylib $<TARGET_FILE_DIR:${target}>/${source_target}
+        COMMAND if [ ${should_sign} ]; then codesign -f -s \"${LFL_OSX_CERT}\" $<TARGET_FILE_DIR:${target}>/${source_target} \; fi)
     endif()
 
-    add_custom_target(${target}_run WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
-      COMMAND $<TARGET_FILE_DIR:${dest_target}>/${target})
+    add_custom_target(${source_target}_run WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${source_target}
+      COMMAND $<TARGET_FILE_DIR:${target}>/${source_target})
 
-    add_custom_target(${target}_debug WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
-      COMMAND lldb -f $<TARGET_FILE_DIR:${dest_target}>/${target} -o run)
+    add_custom_target(${source_target}_debug WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${source_target}
+      COMMAND lldb -f $<TARGET_FILE_DIR:${target}>/${source_target} -o run)
   endfunction()
 
   function(lfl_post_build_start target)
@@ -239,7 +239,7 @@ elseif(LFL_OSX)
       COMMAND lldb -f $<TARGET_FILE:${target}> -o run)
 
     if(LFL_ADD_BITCODE_TARGETS AND TARGET ${target}_designer)
-      lfl_post_build_copy_bin(${target}_designer ${target}_designer ${target})
+      lfl_post_build_copy_bin(${target}_designer ${target})
     endif()
   endfunction()
 
@@ -248,10 +248,10 @@ elseif(LFL_OSX)
   endmacro()
 
 elseif(LFL_WINDOWS)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
   endfunction()
 
   function(lfl_post_build_start target)
@@ -267,12 +267,12 @@ elseif(LFL_WINDOWS)
   endmacro()
 
 elseif(LFL_LINUX)
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMAND cp $<TARGET_FILE:${target}> ${dest_target}.app/${target})
+      COMMAND cp $<TARGET_FILE:${source_target}> ${target}.app/${source_target})
   endfunction()
 
   function(lfl_post_build_start target)
@@ -296,13 +296,13 @@ elseif(LFL_LINUX)
   endmacro()
 
 else()
-  function(lfl_post_build_copy_asset_bin target dest_target)
+  function(lfl_post_build_copy_asset_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_copy_bin target dest_target)
+  function(lfl_post_build_copy_bin target source_target)
   endfunction()
 
-  function(lfl_post_build_start target dest_target)
+  function(lfl_post_build_start target target)
   endfunction()
 
   macro(lfl_add_package target)
