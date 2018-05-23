@@ -239,13 +239,13 @@ endif()
 # fabric
 if(LFL_FABRIC)
   if(LFL_IOS)
-    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Fabric.framework/Headers
-        ${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios/Crashlytics.framework/Headers PARENT_SCOPE)
-    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/fabric-ios -framework Fabric -framework Crashlytics" PARENT_SCOPE)
+    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ios/fabric-ios/Fabric.framework/Headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/ios/fabric-ios/Crashlytics.framework/Headers PARENT_SCOPE)
+    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/ios/fabric-ios -framework Fabric -framework Crashlytics" PARENT_SCOPE)
   elseif(LFL_OSX)
-    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx/Fabric.framework/Headers
-        ${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx/Crashlytics.framework/Headers PARENT_SCOPE)
-    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/fabric-osx -framework Fabric -framework Crashlytics" PARENT_SCOPE)
+    set(FABRIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/osx/fabric-osx/Fabric.framework/Headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/osx/fabric-osx/Crashlytics.framework/Headers PARENT_SCOPE)
+    set(FABRIC_LIB "-F${CMAKE_CURRENT_SOURCE_DIR}/osx/fabric-osx -framework Fabric -framework Crashlytics" PARENT_SCOPE)
   endif()
 endif()
 
@@ -268,8 +268,8 @@ endif()
 
 # AdMob
 if(LFL_IOS)
-  set(ADMOB_OPTIONS -F${CMAKE_CURRENT_SOURCE_DIR}/AdMob-ios PARENT_SCOPE)
-  set(ADMOB_LIBS -F${CMAKE_CURRENT_SOURCE_DIR}/AdMob-ios PARENT_SCOPE)
+  set(ADMOB_OPTIONS -F${CMAKE_CURRENT_SOURCE_DIR}/ios/AdMob-ios PARENT_SCOPE)
+  set(ADMOB_LIBS -F${CMAKE_CURRENT_SOURCE_DIR}/ios/AdMob-ios PARENT_SCOPE)
 endif()
 
 # openssl
@@ -278,12 +278,12 @@ if(LFL_OPENSSL)
     set(OPENSSL_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/openssl/include)
     set(OPENSSL_LIB ${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/ssleay32.lib ${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/libeay32.lib)
   elseif(LFL_ANDROID)
-    set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/include)
-    set(OPENSSL_CRYPTO_LIB ${CMAKE_CURRENT_SOURCE_DIR}/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libcrypto.a)
-    set(OPENSSL_LIB ${CMAKE_CURRENT_SOURCE_DIR}/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libssl.a ${OPENSSL_CRYPTO_LIB})
+    set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/include)
+    set(OPENSSL_CRYPTO_LIB ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libcrypto.a)
+    set(OPENSSL_LIB ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libssl.a ${OPENSSL_CRYPTO_LIB})
   elseif(LFL_IOS)
-    set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ios-openssl/include)
-    set(OPENSSL_LIB ${CMAKE_CURRENT_SOURCE_DIR}/ios-openssl/lib/libssl.a ${CMAKE_CURRENT_SOURCE_DIR}/ios-openssl/lib/libcrypto.a)
+    set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ios/ios-openssl/include)
+    set(OPENSSL_LIB ${CMAKE_CURRENT_SOURCE_DIR}/ios/ios-openssl/lib/libssl.a ${CMAKE_CURRENT_SOURCE_DIR}/ios/ios-openssl/lib/libcrypto.a)
   elseif(LFL_APPLE)
     set(OPENSSL_CONFIGURE_ENV ${CONFIGURE_ENV} PATH=$ENV{PATH}:/opt/X11/bin)
     ExternalProject_Add(openssl PREFIX openssl LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE ON
@@ -425,12 +425,12 @@ endif()
 # ffmpeg
 if(LFL_FFMPEG)
   if(WIN32)
-    set(FFMPEG_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/include PARENT_SCOPE)
-    set(FFMPEG_LIB ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/lib/avformat.lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/lib/avcodec.lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/lib/avutil.lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/lib/swscale.lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-for-Windows-prebuilt/lib/swresample.lib
+    set(FFMPEG_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/include PARENT_SCOPE)
+    set(FFMPEG_LIB ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/lib/avformat.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/lib/avcodec.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/lib/avutil.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/lib/swscale.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/windows/ffmpeg-for-Windows-prebuilt/lib/swresample.lib
         ${LAME_LIB} ${X264_LIB} PARENT_SCOPE)
   else()
     if(LFL_ANDROID)
