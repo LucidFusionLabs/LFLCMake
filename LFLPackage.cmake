@@ -164,7 +164,7 @@ elseif(LFL_OSX)
     if(LFL_XCODE)
       string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
       set_target_properties(${source_target} PROPERTIES
-                            XCODE_ATTRIBUTE_SKIP_INSTALL NO
+                            XCODE_ATTRIBUTE_SKIP_INSTALL YES
                             XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
                             XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                             XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}")
