@@ -194,13 +194,15 @@ elseif(LFL_OSX)
   function(lfl_post_build_start target)
     string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
     set_target_properties(${target} PROPERTIES
+                          RESOURCE Assets.xcassets
                           MACOSX_BUNDLE TRUE
                           MACOSX_BUNDLE_BUNDLE_NAME ${target}
                           XCODE_ATTRIBUTE_SKIP_INSTALL NO
                           XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
                           XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                           XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}"
-                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}")
+                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}"
+                          XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
       set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
     endif()
