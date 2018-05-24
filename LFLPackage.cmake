@@ -67,27 +67,31 @@ elseif(LFL_IOS)
   endfunction()
 
   function(lfl_post_build_start target)
-  string(REPLACE ";" " " IOS_CERT "${LFL_IOS_CERT}")
-  set_target_properties(${target} PROPERTIES
-                        MACOSX_BUNDLE TRUE
-                        RESOURCE Assets.xcassets
-                        XCODE_ATTRIBUTE_SKIP_INSTALL NO
-                        XCODE_ATTRIBUTE_ENABLE_BITCODE FALSE
-                        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${IOS_CERT}"
-                        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_IOS_TEAM}"
-                        XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_IOS_PROVISION_NAME}"
-                        XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
+    string(REPLACE ";" " " IOS_CERT "${LFL_IOS_CERT}")
+    set_target_properties(${target} PROPERTIES
+                          MACOSX_BUNDLE TRUE
+                          XCODE_ATTRIBUTE_SKIP_INSTALL NO
+                          XCODE_ATTRIBUTE_ENABLE_BITCODE FALSE
+                          XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "${IOS_CERT}"
+                          XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_IOS_TEAM}"
+                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_IOS_PROVISION_NAME}")
 
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist)
-      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Assets.xcassets/Contents.json)
+      set_target_properties(${target} PROPERTIES RESOURCE ${target}-ios/Assets.xcassets)
+    endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Assets.xcassets/AppIcon.appiconset)
+      set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
+    endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Info.plist)
+      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Info.plist)
     endif()
 
     if(LFL_XCODE)
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/BundleRoot/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app"
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.bundle\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
-        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/\$\$o" $$f\; done
+        COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/BundleRoot/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app"
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.bundle\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app" \; fi\; done
+        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/\$\$o" $$f\; done
         COMMAND for d in ${LFL_SOURCE_DIR}/core/imports/appirater/\*.lproj\; do if [ -d $$d ]; then o=`basename $$d` \; if [ -d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" ]; then cp $$d/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" \; fi\; fi\; done)
     else()
       set(should_sign)
@@ -96,14 +100,14 @@ elseif(LFL_IOS)
       endif()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND rm -rf ${target}.dSYM
-        COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/BundleRoot/* $<TARGET_FILE_DIR:${target}>
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.bundle\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
-        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile $<TARGET_FILE_DIR:${target}>/$$o $$f\; done
+        COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/BundleRoot/* $<TARGET_FILE_DIR:${target}>
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\;  do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.bundle\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>\; fi\; done
+        COMMAND for f in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Resources/\*\; do o=`basename $$f | sed s/xib$$/nib/`\; ${LFL_APPLE_DEVELOPER}/usr/bin/ibtool --warnings --errors --notices --compile $<TARGET_FILE_DIR:${target}>/$$o $$f\; done
         COMMAND for d in ${LFL_SOURCE_DIR}/core/imports/appirater/\*.lproj\; do if [ -d $$d ]; then o=`basename $$d` \; if [ -d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" ]; then cp $$d/* "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/$$o" \; fi\; fi\; done
         COMMAND dsymutil $<TARGET_FILE:${target}> -o ${target}.dSYM
         COMMAND if [ ${should_sign} ]\; then codesign -f -s \"${LFL_IOS_CERT}\"
-        --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Entitlements.plist $<TARGET_FILE_DIR:${target}>\; fi)
+        --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Entitlements.plist $<TARGET_FILE_DIR:${target}>\; fi)
     endif()
 
     add_custom_target(${target}_pkg WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
@@ -118,14 +122,14 @@ elseif(LFL_IOS)
       add_custom_target(${target}_run WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
         COMMAND if pgrep -f Simulator.app\; then echo\; else nohup /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator & sleep 5\; fi
         COMMAND xcrun simctl install booted $<TARGET_FILE_DIR:${target}> || { tail -1 $ENV{HOME}/Library/Logs/CoreSimulator/CoreSimulator.log && false\; }
-        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
+        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
         COMMAND touch   `find $ENV{HOME}/Library/Developer/CoreSimulator/Devices/\\`xcrun simctl list | grep Booted | head -1 | cut -f2 -d\\\( -f2 | cut -f1 -d\\\)\\`/data/Containers/Bundle/Application -name ${target}.app`/${target}.txt
         COMMAND tail -f `find $ENV{HOME}/Library/Developer/CoreSimulator/Devices/\\`xcrun simctl list | grep Booted | head -1 | cut -f2 -d\\\( -f2 | cut -f1 -d\\\)\\`/data/Containers/Bundle/Application -name ${target}.app`/${target}.txt | tee debug.txt)
 
       add_custom_target(${target}_run_syslog WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DEPENDS ${target}
         COMMAND if pgrep iOS\ Simulator\; then echo\; else nohup /Applications/Xcode.app/Contents/Developer/Applications/iOS\ Simulator.app/Contents/MacOS/iOS\ Simulator & sleep 5\; fi
         COMMAND xcrun simctl install booted $<TARGET_FILE_DIR:${target}> || { tail -1 $ENV{HOME}/Library/Logs/CoreSimulator/CoreSimulator.log && false\; }
-        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
+        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
         COMMAND echo tail -f ~/Library/Logs/CoreSimulator/`xcrun simctl list | grep Booted | head -1 | cut -f2 -d\\\( -f2 | cut -f1 -d\\\)`/system.log
         COMMAND      tail -f ~/Library/Logs/CoreSimulator/`xcrun simctl list | grep Booted | head -1 | cut -f2 -d\\\( -f2 | cut -f1 -d\\\)`/system.log)
 
@@ -133,7 +137,7 @@ elseif(LFL_IOS)
         COMMAND if pgrep iOS\ Simulator\; then echo\; else nohup /Applications/Xcode.app/Contents/Developer/Applications/iOS\ Simulator.app/Contents/MacOS/iOS\ Simulator & sleep 5\; fi
         COMMAND xcrun simctl install booted $<TARGET_FILE_DIR:${target}> || { tail -1 $ENV{HOME}/Library/Logs/CoreSimulator/CoreSimulator.log && false\; }
         COMMAND find $ENV{HOME}/Library/Developer/CoreSimulator/Devices/`xcrun simctl list | grep Booted | head -1 | cut -f2 -d\\\( -f2 | cut -f1 -d\\\)`/data/Containers/Bundle/Application -name ${target}.app
-        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/iphone-Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
+        COMMAND xcrun simctl launch booted `cat ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/Info.plist | grep BundleIdentifier -A1 | tail -1 | cut -f2 -d\\> | cut -f1 -d \\<`
         COMMAND lldb -n ${target} -o cont)
 
     else()
@@ -194,35 +198,40 @@ elseif(LFL_OSX)
   function(lfl_post_build_start target)
     string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
     set_target_properties(${target} PROPERTIES
-                          RESOURCE Assets.xcassets
                           MACOSX_BUNDLE TRUE
                           MACOSX_BUNDLE_BUNDLE_NAME ${target}
                           XCODE_ATTRIBUTE_SKIP_INSTALL NO
                           XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
                           XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                           XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}"
-                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}"
-                          XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
-      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac-Info.plist)
+                          XCODE_ATTRIBUTE_PROVISIONING_PROFILE_SPECIFIER "${LFL_OSX_PROVISION_NAME}")
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Assets.xcassets/Contents.json)
+      set_target_properties(${target} PROPERTIES RESOURCE ${target}-mac/Assets.xcassets)
     endif()
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.icns)
-      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.icns)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Assets.xcassets/AppIcon.appiconset)
+      set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
     endif()
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Entitlements.plist)
-      set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS ${CMAKE_CURRENT_SOURCE_DIR}/mac-Entitlements.plist)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Info.plist)
+      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Info.plist)
     endif()
-
-    if(${target}_LIB_FILES)
-      set(copy_lfl_app_lib_files 1)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns)
+      set_target_properties(${target} PROPERTIES MACOSX_BUNDLE_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns)
+    endif()
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Entitlements.plist)
+      set_target_properties(${target} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/Entitlements.plist)
     endif()
 
     if(LFL_XCODE)
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\; done)
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\; done
+        COMMAND if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\;)
     else()
+       set(copy_lfl_app_lib_files)
+      if(${target}_LIB_FILES)
+        set(copy_lfl_app_lib_files 1)
+      endif()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-iphone/\*.lproj\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>/../Resources \; fi\; done
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>/../Resources \; fi\; done
         COMMAND mkdir -p $<TARGET_FILE_DIR:${target}>/../Libraries
         COMMAND if [ ${copy_lfl_app_lib_files} ]; then cp ${${target}_LIB_FILES} $<TARGET_FILE_DIR:${target}>/../Libraries\; fi
         COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE:${target}> 
