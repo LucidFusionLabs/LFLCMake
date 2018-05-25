@@ -156,6 +156,12 @@ elseif(LFL_IOS)
 elseif(LFL_OSX)
   function(lfl_post_build_copy_asset_bin target source_target)
     if(LFL_XCODE)
+      string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
+      set_target_properties(${source_target} PROPERTIES
+                            XCODE_ATTRIBUTE_SKIP_INSTALL YES
+                            XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
+                            XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
+                            XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}")
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND cp "\${BUILT_PRODUCTS_DIR}/${source_target}" "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources/assets")
     else()
