@@ -273,6 +273,7 @@ endif()
 
 # openssl
 if(LFL_OPENSSL)
+  set(OPENSSL_DEP)
   if(LFL_WINDOWS)
     set(PERL perl)
     set(NMAKE nmake)
@@ -301,6 +302,7 @@ if(LFL_OPENSSL)
 
     set(OPENSSL_INCLUDE ${INSTALL_DIR}/include)
     set(OPENSSL_LIB libssl libcrypto)
+	set(OPENSSL_DEP ${OPENSSL_LIB})
   elseif(LFL_ANDROID)
     set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/include)
     set(OPENSSL_CRYPTO_LIB ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libcrypto.a)
@@ -329,6 +331,7 @@ if(LFL_OPENSSL)
 
     set(OPENSSL_INCLUDE ${INSTALL_DIR}/include)
     set(OPENSSL_LIB libssl libcrypto)
+	set(OPENSSL_DEP ${OPENSSL_LIB})
   else()
     set(OPENSSL_INCLUDE)
     set(OPENSSL_LIB -lssl -lcrypto)
@@ -417,6 +420,9 @@ if(LFL_SQLCIPHER)
   
   set(SQLCIPHER_LIB libsqlcipher PARENT_SCOPE)
   set(SQLCIPHER_DEF -DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 PARENT_SCOPE)
+  if(OPENSSL_DEP)
+    add_dependencies(libsqlcipher ${OPENSSL_DEP})
+  endif()
 endif()
 
 # assimp
