@@ -421,7 +421,7 @@ if(LFL_SQLCIPHER)
   set(SQLCIPHER_LIB libsqlcipher PARENT_SCOPE)
   set(SQLCIPHER_DEF -DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 PARENT_SCOPE)
   if(OPENSSL_DEP)
-    add_dependencies(libsqlcipher ${OPENSSL_DEP})
+    add_dependencies(sqlcipher ${OPENSSL_DEP})
   endif()
 endif()
 
