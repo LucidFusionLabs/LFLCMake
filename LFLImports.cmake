@@ -34,8 +34,11 @@ set(BOOST_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/boost PARENT_SCOPE)
 # zlib
 if(LFL_WINDOWS)
   set(3P_LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/zlib)
+  set(ZLIB_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/zlib ${CMAKE_CURRENT_SOURCE_DIR}/OpenCV/3rdparty/zlib)
   set(ZLIB_LIBRARY zlib)
   add_subdirectory(OpenCV/3rdparty/zlib zlib)
+  set(ZLIB_LIB ${ZLIB_LIBRARY} PARENT_SCOPE)
+  set(ZLIB_INCLUDE ${ZLIB_INCLUDE_DIRS} PARENT_SCOPE)
 endif()
 
 # png
@@ -52,10 +55,6 @@ if(LFL_PNG AND NOT LFL_EMSCRIPTEN)
       add_dependencies(libpng16 libpng)
       set_property(TARGET libpng16 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libpng/lib/libpng16_staticd.lib)
     else()
-      if(LFL_WINDOWS)
-        set(ZLIB_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/zlib ${CMAKE_CURRENT_SOURCE_DIR}/OpenCV/3rdparty/zlib)
-        set(ZLIB_LIBRARIES zlib)
-      endif()
       if(LFL_ANDROID)
         set(ENABLE_NEON ON)
       endif()
@@ -275,8 +274,33 @@ endif()
 # openssl
 if(LFL_OPENSSL)
   if(LFL_WINDOWS)
-    set(OPENSSL_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/openssl/include)
-    set(OPENSSL_LIB ${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/ssleay32.lib ${CMAKE_CURRENT_BINARY_DIR}/openssl/lib/libeay32.lib)
+    set(PERL perl)
+    set(NMAKE nmake)
+    if(PERL_EXECUTABLE)
+	  set(PERL ${PERL_EXECUTABLE})
+	endif()
+	if(NMAKE_EXECUTABLE)
+	  set(NMAKE ${NMAKE_EXECUTABLE})
+	endif()
+    ExternalProject_Add(openssl PREFIX openssl LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE ON
+                        URL ${CMAKE_CURRENT_SOURCE_DIR}/openssl
+						CONFIGURE_COMMAND ${PERL} <SOURCE_DIR>/Configure VC-WIN32 no-asm --prefix=<INSTALL_DIR>
+						COMMAND <SOURCE_DIR>/ms/do_ms.bat ${PERL}
+                        BUILD_COMMAND ${NMAKE} -f <SOURCE_DIR>/ms/nt.mak
+                        INSTALL_COMMAND ${NMAKE} -f <SOURCE_DIR>/ms/nt.mak install
+						INSTALL_DIR openssl/install)
+    ExternalProject_Get_Property(openssl INSTALL_DIR)
+
+    add_library(libssl IMPORTED STATIC GLOBAL)
+    add_dependencies(libssl openssl)
+    set_property(TARGET libssl PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/ssleay32.lib)
+
+    add_library(libcrypto IMPORTED STATIC GLOBAL)
+    add_dependencies(libcrypto openssl)
+    set_property(TARGET libcrypto PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libeay32.lib)
+
+    set(OPENSSL_INCLUDE ${INSTALL_DIR}/include)
+    set(OPENSSL_LIB libssl libcrypto)
   elseif(LFL_ANDROID)
     set(OPENSSL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/include)
     set(OPENSSL_CRYPTO_LIB ${CMAKE_CURRENT_SOURCE_DIR}/android/OpenSSL-for-Android-Prebuilt/openssl-1.0.2/${ANDROID_ABI}/lib/libcrypto.a)
@@ -362,18 +386,35 @@ if(LFL_SQLCIPHER)
     list_append_kv(CONFIG_ENV LIBS "${OPENSSL_CRYPTO_LIB}")
   endif()
 
-  ExternalProject_Add(sqlcipher LOG_CONFIGURE ON LOG_BUILD ON
-                      PREFIX ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher
-                      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sqlcipher
-                      CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${CONFIG_ENV}
-                      <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIG_OPTS}
-                      BUILD_COMMAND env -i ${CMAKE_COMMAND} -E env HOME=$ENV{HOME} PATH=$ENV{PATH} ${CONFIG_ENV}
-                      make libsqlcipher.la
-                      BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
-  add_library(libsqlcipher IMPORTED SHARED GLOBAL)
-  add_dependencies(libsqlcipher sqlcipher)
-  set_property(TARGET libsqlcipher PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
-  set(SQLCIPHER_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/include PARENT_SCOPE)
+  if(LFL_WINDOWS)
+    ExternalProject_Add(sqlcipher PREFIX sqlcipher LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE ON
+                        URL ${CMAKE_CURRENT_SOURCE_DIR}/sqlcipher
+                        CONFIGURE_COMMAND ""
+                        BUILD_COMMAND nmake /f <SOURCE_DIR>/Makefile.msc sqlcipher.lib
+						INSTALL_COMMAND ${CMAKE_COMMAND} -E copy sqlcipher.lib <INSTALL_DIR>
+						COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/sqlcipher
+						COMMAND ${CMAKE_COMMAND} -E copy sqlite3.h <INSTALL_DIR>/sqlcipher
+						COMMAND ${CMAKE_COMMAND} -E copy sqlite3ext.h <INSTALL_DIR>/sqlcipher)
+	ExternalProject_Get_Property(sqlcipher INSTALL_DIR)
+    add_library(libsqlcipher IMPORTED STATIC GLOBAL)
+    add_dependencies(libsqlcipher sqlcipher)
+    set_property(TARGET libsqlcipher PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/sqlcipher.lib)
+	set(SQLCIPHER_INCLUDE ${INSTALL_DIR} PARENT_SCOPE)
+  else()
+    ExternalProject_Add(sqlcipher LOG_CONFIGURE ON LOG_BUILD ON
+                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher
+                        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sqlcipher
+                        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${CONFIG_ENV}
+                        <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIG_OPTS}
+                        BUILD_COMMAND env -i ${CMAKE_COMMAND} -E env HOME=$ENV{HOME} PATH=$ENV{PATH} ${CONFIG_ENV}
+                        make libsqlcipher.la
+                        BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
+    add_library(libsqlcipher IMPORTED SHARED GLOBAL)
+    add_dependencies(libsqlcipher sqlcipher)
+    set_property(TARGET libsqlcipher PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
+	set(SQLCIPHER_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/include PARENT_SCOPE)
+  endif()
+  
   set(SQLCIPHER_LIB libsqlcipher PARENT_SCOPE)
   set(SQLCIPHER_DEF -DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 PARENT_SCOPE)
 endif()

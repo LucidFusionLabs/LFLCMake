@@ -1,6 +1,5 @@
 # $Id: LFLCore.cmake 1335 2014-12-02 04:13:46Z justin $
 
-CMAKE_POLICY(SET CMP0004 OLD)
 set(BUILD_SHARED_LIBS OFF)
 
 if(CMAKE_TOOLCHAIN_FILE)
@@ -182,7 +181,7 @@ if(LFL_WINDOWS)
     CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_DEBUG  CMAKE_CXX_FLAGS_DEBUG_INIT)
     STRING(REPLACE "/MD"  "/MT"  "${flag}" "${${flag}}")
     STRING(REPLACE "/MDd" "/MTd" "${flag}" "${${flag}}")
-    SET("${flag}" "${${flag}} /EHsc")
+    SET("${flag}" "${${flag}} /EHsc /wd4244 /wd4018 /wd4305")
   ENDFOREACH()
 else()
   if(LFL_CPP98)
