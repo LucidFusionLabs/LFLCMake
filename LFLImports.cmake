@@ -393,7 +393,7 @@ if(LFL_SQLCIPHER)
     ExternalProject_Add(sqlcipher PREFIX sqlcipher LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE ON
                         URL ${CMAKE_CURRENT_SOURCE_DIR}/sqlcipher
                         CONFIGURE_COMMAND ""
-                        BUILD_COMMAND nmake /f <SOURCE_DIR>/Makefile.msc sqlcipher.lib
+                        BUILD_COMMAND nmake /f <SOURCE_DIR>/Makefile.msc /D "TCLSH_CMD=${CMAKE_CURRENT_SOURCE_DIR}/windows/tclsh.exe" sqlcipher.lib
 						INSTALL_COMMAND ${CMAKE_COMMAND} -E copy sqlcipher.lib <INSTALL_DIR>
 						COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/sqlcipher
 						COMMAND ${CMAKE_COMMAND} -E copy sqlite3.h <INSTALL_DIR>/sqlcipher
