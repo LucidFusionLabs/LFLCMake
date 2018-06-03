@@ -135,7 +135,7 @@ function(lfl_add_target _name)
     message(FATAL_ERROR "lfl_add_target without EXECUTABLE, STATIC_LIBRARY, or SHARED_LIBRARY")
   endif()
 
-  add_dependencies(${_name} lfl_app ${_DEPENDENCIES})
+  add_dependencies(${_name} app_core ${_DEPENDENCIES})
   target_include_directories(${_name} PUBLIC ${LFL_APP_INCLUDE} ${_INCLUDE_DIRECTORIES})
   target_compile_definitions(${_name} PUBLIC ${LFL_APP_DEF} ${_COMPILE_DEFINITIONS})
   target_compile_options(${_name} PUBLIC ${LFL_APP_CFLAGS} ${_COMPILE_OPTIONS})

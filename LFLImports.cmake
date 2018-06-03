@@ -590,9 +590,11 @@ endif()
 
 # GLEW
 if(LFL_GLEW)
+  set(GLEW_DEF -DGLEW_STATIC -DGLEW_MX)
   add_subdirectory(glew)
   set(GLEW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/glew/include PARENT_SCOPE)
   set(GLEW_LIB glew PARENT_SCOPE)
+  set(GLEW_DEF -DLFL_GLEW ${GLEW_DEF} PARENT_SCOPE)
 endif()
 
 # wxWidgets

@@ -232,7 +232,7 @@ elseif(LFL_OSX)
         COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\; done
         COMMAND if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\;)
     else()
-       set(copy_lfl_app_lib_files)
+        set(copy_lfl_app_lib_files)
       if(${target}_LIB_FILES)
         set(copy_lfl_app_lib_files 1)
       endif()
