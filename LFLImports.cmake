@@ -96,12 +96,10 @@ if(LFL_JPEG)
       set(JPEG_CONFIGURE_ENV ${JPEG_CONFIGURE_ENV} NASM=${NASM_PATH})
     endif()
     ExternalProject_Add(libjpeg-turbo LOG_CONFIGURE ON LOG_BUILD ON
-                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo
-                        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${JPEG_CONFIGURE_ENV}
-                        <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIGURE_OPTIONS}
-                        DOWNLOAD_COMMAND rm -rf libjpeg-turbo
-                        COMMAND cp -R ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg-turbo libjpeg-turbo
-                        COMMAND ${CMAKE_COMMAND} -E chdir libjpeg-turbo autoreconf -fi)
+                        URL ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg-turbo
+                        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> autoreconf -fi
+                        COMMAND ${CMAKE_COMMAND} -E env ${JPEG_CONFIGURE_ENV}
+                        <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIGURE_OPTIONS})
     add_library(libjpeg IMPORTED STATIC GLOBAL)
     add_dependencies(libjpeg libjpeg-turbo)
     set_property(TARGET libjpeg PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo/lib/libturbojpeg.a)
@@ -313,19 +311,18 @@ if(LFL_OPENSSL)
   elseif(LFL_APPLE)
     set(OPENSSL_CONFIGURE_ENV ${CONFIGURE_ENV} PATH=$ENV{PATH}:/opt/X11/bin)
     ExternalProject_Add(openssl PREFIX openssl LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE ON
+                        URL ${CMAKE_CURRENT_SOURCE_DIR}/openssl
                         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${OPENSSL_CONFIGURE_ENV}
                         <SOURCE_DIR>/Configure darwin64-x86_64-cc shared enable-ec_nistp_64_gcc_128 no-ssl2 no-ssl3 no-comp ${ENV_CFLAGS} --prefix=<INSTALL_DIR>
                         COMMAND ${CMAKE_COMMAND} -E env ${OPENSSL_CONFIGURE_ENV} make depend
-                        DOWNLOAD_COMMAND rm -rf openssl
-                        COMMAND cp -R ${CMAKE_CURRENT_SOURCE_DIR}/openssl openssl
                         INSTALL_DIR openssl/install)
     ExternalProject_Get_Property(openssl INSTALL_DIR)
 
-    add_library(libssl IMPORTED SHARED GLOBAL)
+    add_library(libssl IMPORTED STATIC GLOBAL)
     add_dependencies(libssl openssl)
     set_property(TARGET libssl PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libssl.a)
 
-    add_library(libcrypto IMPORTED SHARED GLOBAL)
+    add_library(libcrypto IMPORTED STATIC GLOBAL)
     add_dependencies(libcrypto openssl)
     set_property(TARGET libcrypto PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libcrypto.a)
 
@@ -412,7 +409,7 @@ if(LFL_SQLCIPHER)
                         BUILD_COMMAND env -i ${CMAKE_COMMAND} -E env HOME=$ENV{HOME} PATH=$ENV{PATH} ${CONFIG_ENV}
                         make libsqlcipher.la
                         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
-    add_library(libsqlcipher IMPORTED SHARED GLOBAL)
+    add_library(libsqlcipher IMPORTED STATIC GLOBAL)
     add_dependencies(libsqlcipher sqlcipher)
     set_property(TARGET libsqlcipher PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/lib/libsqlcipher.a)
 	set(SQLCIPHER_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/sqlcipher/include PARENT_SCOPE)
