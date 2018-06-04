@@ -590,7 +590,11 @@ endif()
 
 # GLEW
 if(LFL_GLEW)
-  set(GLEW_DEF -DGLEW_STATIC -DGLEW_MX)
+  if(LFL_WINDOWS)
+    set(GLEW_DEF -DGLEW_STATIC -DGLEW_MX)
+  else()
+    set(GLEW_DEF -DGLEW_STATIC)
+  endif()
   add_subdirectory(glew)
   set(GLEW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/glew/include PARENT_SCOPE)
   set(GLEW_LIB glew PARENT_SCOPE)
