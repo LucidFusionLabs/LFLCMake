@@ -237,7 +237,7 @@ elseif(LFL_OSX)
         set(copy_lfl_app_lib_files 1)
       endif()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>/../Resources \; fi\; done
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/*.lproj\; do if [ -d $$d ]; then cp -R $$d $<TARGET_FILE_DIR:${target}>/../Resources \; fi\; done
         COMMAND mkdir -p $<TARGET_FILE_DIR:${target}>/../Libraries
         COMMAND if [ ${copy_lfl_app_lib_files} ]; then cp ${${target}_LIB_FILES} $<TARGET_FILE_DIR:${target}>/../Libraries\; fi
         COMMAND install_name_tool -change /usr/local/lib/libportaudio.2.dylib @loader_path/../Libraries/libportaudio.2.dylib $<TARGET_FILE:${target}> 
@@ -298,13 +298,21 @@ elseif(LFL_LINUX)
   endfunction()
 
   function(lfl_post_build_copy_bin target source_target)
+    install(TARGETS ${source_target} DESTINATION .)
+
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND cp $<TARGET_FILE:${source_target}> ${target}.app/${source_target})
   endfunction()
 
   function(lfl_post_build_start target)
+    file(GLOB asset_files ${${target}_ASSET_FILES})
+    install(TARGETS ${target} DESTINATION .)
+    install(FILES ${asset_files} DESTINATION assets)
+
     if(${target}_LIB_FILES)
       set(copy_lfl_app_lib_files 1)
+      file(GLOB lib_files ${${target}_LIB_FILES})
+      install(FILES ${lib_files} DESTINATION assets)
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

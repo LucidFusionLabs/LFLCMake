@@ -184,6 +184,15 @@ if(LFL_CACHE AND CCACHE_PROGRAM AND NOT LFL_WINDOWS)
   endif()
 endif()
 
+if(LFL_CPACK)
+  if(LFL_LINUX)
+    if("$ENV{OS}" STREQUAL "ubuntu" OR "$ENV{OS}" STREQUAL "debian")
+      set(CPACK_GENERATOR DEB)
+    endif()
+  endif()
+  include(CPack)
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${LFL_SOURCE_DIR}/core/CMake)
 include(LFLTarget)
 include(LFLPackage)
@@ -373,21 +382,3 @@ endmacro()
 
 # app
 add_subdirectory(${LFL_SOURCE_DIR}/core/app ${LFL_CORE_BINARY_DIR}/app)
-
-# web
-add_subdirectory(${LFL_SOURCE_DIR}/core/web ${LFL_CORE_BINARY_DIR}/web)
-
-# game
-add_subdirectory(${LFL_SOURCE_DIR}/core/game ${LFL_CORE_BINARY_DIR}/game)
-
-# ide
-add_subdirectory(${LFL_SOURCE_DIR}/core/ide ${LFL_CORE_BINARY_DIR}/ide)
-
-# ml
-add_subdirectory(${LFL_SOURCE_DIR}/core/ml ${LFL_CORE_BINARY_DIR}/ml)
-
-# nlp
-add_subdirectory(${LFL_SOURCE_DIR}/core/nlp ${LFL_CORE_BINARY_DIR}/nlp)
-
-# speech
-add_subdirectory(${LFL_SOURCE_DIR}/core/speech ${LFL_CORE_BINARY_DIR}/speech)

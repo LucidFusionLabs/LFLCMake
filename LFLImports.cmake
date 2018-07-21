@@ -99,6 +99,7 @@ if(LFL_JPEG)
     endif()
     ExternalProject_Add(libjpeg-turbo LOG_CONFIGURE ON LOG_BUILD ON
                         URL ${CMAKE_CURRENT_SOURCE_DIR}/libjpeg-turbo
+                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/libjpeg-turbo
                         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR> autoreconf -fi
                         COMMAND ${CMAKE_COMMAND} -E env ${JPEG_CONFIGURE_ENV}
                         <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIGURE_OPTIONS})
@@ -176,6 +177,8 @@ endif()
 if(LFL_FLATBUFFERS)
   set(CMAKE_CXX_FLAGS_ORIG ${CMAKE_CXX_FLAGS})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsigned-char")
+  set(FLATBUFFERS_BUILD_TESTS OFF)
+  set(FLATBUFFERS_INSTALL OFF)
   add_subdirectory(flatbuffers)
   set(FLATBUFFERS_LIB flatbuffers PARENT_SCOPE)
   set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_ORIG})
