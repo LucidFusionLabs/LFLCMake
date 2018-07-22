@@ -298,7 +298,7 @@ elseif(LFL_LINUX)
   endfunction()
 
   function(lfl_post_build_copy_bin target source_target)
-    install(TARGETS ${source_target} DESTINATION .)
+    install(TARGETS ${source_target} DESTINATION ${${target}_BIN_DIR})
 
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND cp $<TARGET_FILE:${source_target}> ${target}.app/${source_target})
@@ -306,13 +306,13 @@ elseif(LFL_LINUX)
 
   function(lfl_post_build_start target)
     file(GLOB asset_files ${${target}_ASSET_FILES})
-    install(TARGETS ${target} DESTINATION .)
-    install(FILES ${asset_files} DESTINATION assets)
+    install(TARGETS ${target} DESTINATION ${${target}_BIN_DIR})
+    install(FILES ${asset_files} DESTINATION ${${target}_RES_DIR})
 
     if(${target}_LIB_FILES)
       set(copy_lfl_app_lib_files 1)
       file(GLOB lib_files ${${target}_LIB_FILES})
-      install(FILES ${lib_files} DESTINATION assets)
+      install(FILES ${lib_files} DESTINATION ${${target}_RES_DIR})
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
