@@ -603,6 +603,16 @@ if(LFL_GLEW)
   set(GLEW_DEF -DLFL_GLEW ${GLEW_DEF} PARENT_SCOPE)
 endif()
 
+# DirectX
+if(LFL_DIRECTX)
+  if(NOT DIRECTX_INCLUDE)
+    set(DIRECTX_INCLUDE "C:\\Program Files (x86)\\Microsoft DirectX SDK\\include" PARENT_SCOPE)
+  endif()
+  if(NOT DIRECTX_LIB)
+    set(DIRECTX_LIB "C:\\Program Files (x86)\\Microsoft DirectX SDK\\lib\\x64\\d3d9.lib" "C:\\Program Files (x86)\\Microsoft DirectX SDK\\lib\\x64\\d3dx9.lib" PARENT_SCOPE)
+  endif()
+endif()
+
 # wxWidgets
 # ./configure --disable-shared --enable-unicode --with-cocoa --with-macosx-version-min=10.7 --with-macosx-sdk=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk CXXFLAGS="-std=c++0x -stdlib=libc++" CPPFLAGS="-stdlib=libc++" LIBS=-lc++
 if(LFL_WXWIDGETS)
@@ -835,7 +845,8 @@ if(LFL_JSONCPP)
                       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/jsoncpp)
   add_library(libjsoncpp IMPORTED STATIC GLOBAL)
   add_dependencies(libjsoncpp jsoncpp)
-  set_property(TARGET libjsoncpp PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp/lib/libjsoncpp.a)
+  get_static_library_name(_lib jsoncpp)
+  set_property(TARGET libjsoncpp PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp/lib/${_lib})
   set(JSONCPP_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp/include PARENT_SCOPE)
   set(JSONCPP_LIB libjsoncpp PARENT_SCOPE)
 endif()
