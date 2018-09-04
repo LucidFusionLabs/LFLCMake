@@ -163,7 +163,7 @@ elseif(LFL_OSX)
                             XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                             XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}")
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND cp "\${BUILT_PRODUCTS_DIR}/${source_target}" "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources/assets")
+        COMMAND cp "\${BUILT_PRODUCTS_DIR}/${source_target}" "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources/assets")
     else()
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND cp $<TARGET_FILE:${source_target}> $<TARGET_FILE_DIR:${target}>/../Resources/assets)
@@ -179,7 +179,7 @@ elseif(LFL_OSX)
                             XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
                             XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${LFL_OSX_TEAM}")
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND cp "\${BUILT_PRODUCTS_DIR}/${source_target}" "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/MacOS")
+        COMMAND cp "\${BUILT_PRODUCTS_DIR}/${source_target}" "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/MacOS")
     else()
       set(should_sign)
       if(LFL_OSX_CERT)
@@ -204,8 +204,6 @@ elseif(LFL_OSX)
   function(lfl_post_build_start target)
     string(REPLACE ";" " " OSX_CERT "${LFL_OSX_CERT}")
     set_target_properties(${target} PROPERTIES
-                          MACOSX_BUNDLE TRUE
-                          MACOSX_BUNDLE_BUNDLE_NAME ${target}
                           XCODE_ATTRIBUTE_SKIP_INSTALL NO
                           XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym"
                           XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY[variant=Release] "${OSX_CERT}"
@@ -229,8 +227,8 @@ elseif(LFL_OSX)
 
     if(LFL_XCODE)
       add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\; done
-        COMMAND if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.app/Contents/Resources" \; fi\;)
+        COMMAND for d in ${CMAKE_CURRENT_SOURCE_DIR}/${target}-ios/\*.lproj\; do if [ -d $$d ]; then cp -R $$d "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources" \; fi\; done
+        COMMAND if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns ]; then cp ${CMAKE_CURRENT_SOURCE_DIR}/${target}-mac/icon.icns "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources" \; fi\;)
     else()
         set(copy_lfl_app_lib_files)
       if(${target}_LIB_FILES)
@@ -272,6 +270,20 @@ elseif(LFL_OSX)
 
   macro(lfl_add_package target)
     lfl_add_target(${target} EXECUTABLE ${ARGN})
+    set_target_properties(${target} PROPERTIES
+                          MACOSX_BUNDLE TRUE
+                          MACOSX_BUNDLE_BUNDLE_NAME ${target})
+  endmacro()
+
+  macro(lfl_add_screensaver target)
+    lfl_add_target(${target} MODULE_LIBRARY ${ARGN})
+    set_target_properties(${target} PROPERTIES
+                          BUNDLE TRUE
+                          XCODE_ATTRIBUTE_WRAPPER_EXTENSION "saver"
+                          XCODE_ATTRIBUTE_MACH_O_TYPE "mh_bundle")
+    add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMAND mkdir -p "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources/assets"
+      COMMAND cp ${${target}_ASSET_FILES} "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources/assets")
   endmacro()
 
 elseif(LFL_WINDOWS)
