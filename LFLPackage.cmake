@@ -280,7 +280,8 @@ elseif(LFL_OSX)
     set_target_properties(${target} PROPERTIES
                           BUNDLE TRUE
                           XCODE_ATTRIBUTE_WRAPPER_EXTENSION "saver"
-                          XCODE_ATTRIBUTE_MACH_O_TYPE "mh_bundle")
+                          XCODE_ATTRIBUTE_MACH_O_TYPE "mh_bundle"
+                          XCODE_ATTRIBUTE_INSTALL_PATH "/Library/Screen Savers")
     add_custom_command(TARGET ${target} POST_BUILD WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMAND mkdir -p "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources/assets"
       COMMAND cp ${${target}_ASSET_FILES} "\${BUILT_PRODUCTS_DIR}/\${PRODUCT_NAME}.\${WRAPPER_EXTENSION}/Contents/Resources/assets")
