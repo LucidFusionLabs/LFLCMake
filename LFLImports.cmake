@@ -827,10 +827,32 @@ endif()
 
 # v8 js
 if(LFL_V8JS)
-  set(V8JS_INCLUDE ${V8_DIR}/include PARENT_SCOPE)
-  set(V8JS_LIB ${V8_DIR}/native/libv8_libplatform.a ${V8_DIR}/native/libv8_libbase.a
-      ${V8_DIR}/native/libv8_base.a ${V8_DIR}/native/libv8_snapshot.a ${V8_DIR}/native/libicuuc.a
-      ${V8_DIR}/native/libicui18n.a ${V8_DIR}/native/libicudata.a PARENT_SCOPE)
+  if(NOT V8_DIR)
+    set(BUILD_ENV PATH=$ENV{PATH}:${CMAKE_CURRENT_SOURCE_DIR}/v8/depot_tools)
+    ExternalProject_Add(v8 LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE TRUE
+                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/v8
+                        DOWNLOAD_COMMAND rm -rf v8
+                        COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} fetch v8
+                        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} gclient sync
+                        COMMAND tools/dev/v8gen.py x64.release
+                        BUILD_COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} ninja -C out.gn/x64.release
+                        INSTALL_COMMAND "")
+    set(V8_DIR ${CMAKE_CURRENT_BINARY_DIR}/v8/src/v8)
+    set(V8JS_INCLUDE ${V8_DIR}/include PARENT_SCOPE)
+    set(OBJ_DIR ${V8_DIR}/out.gn/x64.release/obj)
+    file(GLOB V8_BASE ${OBJ_DIR}/v8_base/*.o)
+    file(GLOB V8_EXTERNAL_SNAPSHOT ${OBJ_DIR}/v8_external_snapshot/*.o)
+    file(GLOB V8_SAMPLER ${OBJ_DIR}/v8_libsampler/*.o)
+    set(V8JS_LIB ${OBJ_DIR}/libv8_libplatform.a ${OBJ_DIR}/libv8_libbase.a ${V8_BASE} ${V8_EXTERNAL_SNAPSHOT} ${V8_SAMPLER}
+        ${OBJ_DIR}/third_party/icu/libicuuc.a ${OBJ_DIR}/third_party/icu/libicui18n.a PARENT_SCOPE)
+  else()
+    add_library(v8 IMPORTED STATIC GLOBAL)
+    set_property(TARGET v8 PROPERTY IMPORTED_LOCATION ${V8_DIR}/libv8_libbase.a)
+    set(V8JS_INCLUDE ${V8_DIR}/../include PARENT_SCOPE)
+    set(V8JS_LIB ${V8_DIR}/libv8_libplatform.a ${V8_DIR}/libv8_libbase.a
+        ${V8_DIR}/libv8_base.a ${V8_DIR}/libv8_external_snapshot.a ${V8_DIR}/libv8_sampler.a
+        ${V8_DIR}/third_party/icu/libicuuc.a ${V8_DIR}/third_party/icu/libicui18n.a PARENT_SCOPE)
+  endif()
 endif()
 
 # tinyjs
