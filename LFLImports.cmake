@@ -834,25 +834,21 @@ if(LFL_V8JS)
                         DOWNLOAD_COMMAND rm -rf v8
                         COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} fetch v8
                         CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} gclient sync
-                        COMMAND tools/dev/v8gen.py x64.release
+                        COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} tools/dev/v8gen.py x64.release --
+                        is_component_build=false v8_static_library=true v8_use_snapshot=true 
+                        v8_use_external_startup_data=false
                         BUILD_COMMAND ${CMAKE_COMMAND} -E env ${BUILD_ENV} ninja -C out.gn/x64.release
                         INSTALL_COMMAND "")
-    set(V8_DIR ${CMAKE_CURRENT_BINARY_DIR}/v8/src/v8)
-    set(V8JS_INCLUDE ${V8_DIR}/include PARENT_SCOPE)
-    set(OBJ_DIR ${V8_DIR}/out.gn/x64.release/obj)
-    file(GLOB V8_BASE ${OBJ_DIR}/v8_base/*.o)
-    file(GLOB V8_EXTERNAL_SNAPSHOT ${OBJ_DIR}/v8_external_snapshot/*.o)
-    file(GLOB V8_SAMPLER ${OBJ_DIR}/v8_libsampler/*.o)
-    set(V8JS_LIB ${OBJ_DIR}/libv8_libplatform.a ${OBJ_DIR}/libv8_libbase.a ${V8_BASE} ${V8_EXTERNAL_SNAPSHOT} ${V8_SAMPLER}
-        ${OBJ_DIR}/third_party/icu/libicuuc.a ${OBJ_DIR}/third_party/icu/libicui18n.a PARENT_SCOPE)
+    set(V8_DIR ${CMAKE_CURRENT_BINARY_DIR}/v8/src/v8/out.gn/x64.release/obj)
+    set(V8JS_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/v8/src/v8/include PARENT_SCOPE)
   else()
     add_library(v8 IMPORTED STATIC GLOBAL)
     set_property(TARGET v8 PROPERTY IMPORTED_LOCATION ${V8_DIR}/libv8_libbase.a)
     set(V8JS_INCLUDE ${V8_DIR}/../include PARENT_SCOPE)
-    set(V8JS_LIB ${V8_DIR}/libv8_libplatform.a ${V8_DIR}/libv8_libbase.a
-        ${V8_DIR}/libv8_base.a ${V8_DIR}/libv8_external_snapshot.a ${V8_DIR}/libv8_sampler.a
-        ${V8_DIR}/third_party/icu/libicuuc.a ${V8_DIR}/third_party/icu/libicui18n.a PARENT_SCOPE)
   endif()
+  set(V8JS_LIB ${V8_DIR}/libv8_libplatform.a ${V8_DIR}/libv8_libbase.a
+      ${V8_DIR}/libv8_base.a ${V8_DIR}/libv8_snapshot.a ${V8_DIR}/libv8_libsampler.a
+      ${V8_DIR}/third_party/icu/libicuuc.a ${V8_DIR}/third_party/icu/libicui18n.a PARENT_SCOPE)
 endif()
 
 # tinyjs
