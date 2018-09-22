@@ -740,6 +740,18 @@ endif()
 
 # libclang
 if(LFL_LIBCLANG)
+  if(NOT LLVM_DIR)
+    ExternalProject_Add(llvm LOG_CONFIGURE ON LOG_BUILD ON
+                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/llvm
+                        DOWNLOAD_COMMAND svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+                        COMMAND svn co http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang
+                        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/llvm)
+    set(LLVM_DIR ${CMAKE_CURRENT_BINARY_DIR}/llvm)
+  else()
+    add_library(llvm IMPORTED STATIC GLOBAL)
+    set_property(TARGET llvm PROPERTY IMPORTED_LOCATION ${LLVM_DIR}/lib/libLLVMCore.a)
+  endif()
+
   get_unversioned_shared_library_name(CLANG_LIBRARY ${LLVM_DIR}/lib/libclang)
   if(LFL_APPLE)
     set(LLVM_SYSTEM_LIBRARIES -lncurses)
