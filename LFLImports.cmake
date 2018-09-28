@@ -603,6 +603,29 @@ if(LFL_GLEW)
   set(GLEW_DEF -DLFL_GLEW ${GLEW_DEF} PARENT_SCOPE)
 endif()
 
+# bgfx
+if(LFL_BGFX)
+  if(NOT BGFX_DIR)
+    set(GEN_COMMAND ${CMAKE_COMMAND} -E echo skipping gen)
+    if(LFL_WINDOWS)
+      set(GEN_COMMAND ../bx/tools/bin/windows/genie --with-tools --with-examples vs2017)
+    endif()
+    ExternalProject_Add(bgfx LOG_CONFIGURE ON LOG_BUILD ON BUILD_IN_SOURCE TRUE
+                        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/bgfx
+                        DOWNLOAD_COMMAND git clone https://github.com/bkaradzic/bgfx
+                        COMMAND git clone --depth 1 https://github.com/bkaradzic/bx bx
+                        COMMAND git clone --depth 1 https://github.com/bkaradzic/bimg bimg
+                        COMMAND ${GEN_COMMAND} CONFIGURE_COMMAND "" INSTALL_COMMAND ""
+                        BUILD_COMMAND make build)
+    if(LFL_APPLE)
+      set(BGFX_DIR ${CMAKE_CURRENT_BINARY_DIR}/bgfx/src/bgfx/.build/osx64_clang/bin)
+    endif()
+    set(BGFX_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/bgfx/src/bgfx/include PARENT_SCOPE)
+  else()
+  endif()
+  set(BGFX_LIB ${BGFX_DIR}/libbgfxRelease.a ${BGFX_DIR}/libbxRelease.a ${BGFX_DIR}/libbimgRelease.a PARENT_SCOPE)
+endif()
+
 # DirectX
 if(LFL_DIRECTX)
   if(NOT DIRECTX_INCLUDE)
